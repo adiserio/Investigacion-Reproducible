@@ -1,0 +1,247 @@
+---
+title: "Seminario: Reproducción con RMarkdown"
+author: "Angela Di Serio"
+date: "Abril 26, 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Inicialización del ambiente de trabajo
+
+## Opciones Generales Usadas
+
+```{r setup, include=TRUE, comment=NA, prompt=FALSE}
+## ``` {r setup, include=TRUE}
+## Opciones generales que pueden ser cambiadas individualmente en cada uno de
+## los trozos de código
+
+knitr::opts_chunk$set(echo = TRUE,     ## TRUE/FALSE o numérico. Indica si se incluye o  
+                                       ## no el código en R en la salida a generar
+                      comment=NA,      ## '##' caracter Se trata del prefijo a colocar 
+                                       ## antes de la salida de las ejecución del código 
+                                       ## en R
+                      warning=FALSE,   ## Si se muestran las advertencias que se generan
+                                       ## durante la ejecución del código R output
+                      message=FALSE,
+                      error=TRUE,
+                      eval=TRUE )      ## Indica si el trozo de código será evaluado
+                                       ## Puede usarse un valor lógico (TRUE/FALSE) o un 
+                                       ## vector numérico que indica cuáles expresiones 
+                                       ## serán evaluadas eval=c(1, 3, 4) o eval=-(4:5))
+options(tinytex.verbose = TRUE)
+##```
+
+```
+
+
+
+
+## Librerías Requeridas
+
+```{r librerias, error=FALSE}
+## ```{r librerias, error=FALSE}
+list.of.packages <- c("pander","ggplot2","knitr","dplyr","summarytools")
+
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages,repos="https://cloud.r-project.org")
+
+
+library(pander)
+library(ggplot2)
+library(knitr)
+
+library(dplyr)
+library(summarytools)
+
+##```
+```
+
+Para este ejercicio necesitamos la carga de las siguientes librerías que serán automáticamente instaladas en caso de no disponerlas en la configuración actual de RStudio:  
+`r gsub("\n","  \n",pandoc.list.return(list.of.packages, style = "bullet"))`
+
+Para listar las librerías que se muestran en el documento se usó el siguiente código R entre líneas de texto 
+
+```{r comment=NA, eval=FALSE} 
+`r gsub("\n","  \n",pandoc.list.return(list.of.packages, style = "bullet"))`
+```
+
+
+## Información de la Sesión
+
+Tanto las librerías requeridas para un proyecto en particular como la información de la sesión es importante para lograr el objetivo de Reproducibilidad de nuestro trabajo. Para garantizar totalmente su reproducibilidad es conveniente utilizar el paquete _packrat_ pata la gestión de dependencias. 
+
+``` {r InfoSesion}
+sessionInfo()
+```
+
+
+# Obtención de los Datos
+Para este ejercicio usamos el conjunto de datos _ToothGrowth_ disponible en el ambiente R. Este conjunto contiene datos sobre el **Efecto de la Vitamina C en el crecimiento de dientes en Conejillos de india**. _ToothGrowth_ consiste en `r dim(ToothGrowth)[1]` registros y `r dim(ToothGrowth)[2]` atributos (`r names(ToothGrowth)`). Esta información se extrae directamente del conjunto de datos sin necesidad de hacer _Cut & Paste_. Si el conjunto de datos cambia, automáticamente se ajustan estos valores al regenerar el fichero de salida.
+
+Para esto usamos código R entre las líneas de nuestro documento. A continuación se muestra el código utilizado para lograr este objetivo:
+
+```{r comment=NA, eval=FALSE} 
+`r dim(ToothGrowth)[1]`     ## cantidad de registros en el conjunto de datos
+`r dim(ToothGrowth)[2]`     ## cantidad de atributos
+(`r names(ToothGrowth)`)    ## identificación de los atributos o columnas del conjunto
+                            ## de datos
+```
+
+
+Asi que donde dice 60 en el documento, realmente está la primera expresión que se muestra arriba, donde dice 3 está la segunda expresión y donde dice (len, supp, dose) está la tercera expresión. De esta forma podemos evitar errores involuntarios de transcripción.
+
+Al trabajar de esta forma, podemos incluir estadística descriptiva de nuestro conjunto de datos. Inicialmente podemos verlo como una bitácora de la exploración inicial de los datos y después podemos transformarlo en lo que será un artículo a ser publicado en alguna conferencia o revista y podrá ser reproducido posteriormente por nuestro grupo de investigación o por cualquier otro investigador. 
+
+En el documento podemos tener muchos trozos de código en R (_chunks_) y a medida que vamos trabajando podemos cambiar las opciones del chunk para indicar si deseamos que se ejecute, se muestre el resultado, etc. Todo esto lo controlamos indicando en el _chunk_ la opción deseada. 
+
+## Generación de Tablas
+
+``` {r tabla1, results='asis'}
+##``` {r tabla1, results='asis'}    ## opciones utilizadas
+pandoc.table(dplyr::sample_n(ToothGrowth,10),"Selección de 10 elementos de ToothGrowth")
+
+```
+
+
+``` {r tabla2, results="asis"}
+##``` {r tabla2, results="asis"} ## opciones utilizadas
+pandoc.table(dplyr::sample_n(ToothGrowth,10),
+             "Selección de 10 elementos de TootGrowth con justificación", 
+             justify=c("right","center","right"))
+
+```
+
+## Análisis Exploratorio de los Datos
+
+En esta sección colocaremos información relacionada con los datos, como por ejemplo distribución de los mismos, si hay valores faltantes, etc.
+
+
+```{r EDA1}
+dfSummary(ToothGrowth, varnumbers=FALSE, plain.ascii = FALSE, style = "grid", 
+          graph.magnif = 0.25, valid.col = FALSE, tmp.img.dir = "/tmp", 
+          na.col=FALSE, graph.col=TRUE)
+
+```
+
+\newpage
+
+``` {r EDA2, results='asis', error=TRUE ,warning=FALSE, message=FALSE}
+##``` {r EDA2, results='asis', error=TRUE,warning=FALSE, message=FALSE}
+pandoc.table(descr(ToothGrowth, stats = "common", transpose = TRUE),"Otra mas")
+
+``` 
+
+```{r EDA3}
+(stby(data = ToothGrowth, INDICES = ToothGrowth$supp, 
+                               FUN = descr, stats = c("mean", "sd", "min", "med", "max"), 
+                               transpose = TRUE))
+```
+
+``` {r EDA5, results='asis', echo = TRUE}
+##``` {r EDA5, results='asis', echo = TRUE}
+(freq(ToothGrowth$supp))
+```
+
+```{r Boxplot2, echo=FALSE,fig.height=4,fig.width=5}
+
+ggplot(aes(x=as.factor(dose),y=len),data=ToothGrowth) + 
+geom_boxplot(aes(fill=supp)) + 
+xlab("Dose")+
+ggtitle("Figura 1. Efecto de la dosis de Vitamina C en el crecimiento de los dientes\n dependiendo del suplemento ")+
+theme(axis.text=element_text(size=10),axis.title=element_text(size=10),plot.title = element_text(size=11))
+
+```
+
+
+```{r Boxplot1, echo=FALSE,fig.height=4,fig.width=5}
+ggplot(aes(x=as.factor(dose),y=len),data=ToothGrowth) + 
+geom_boxplot(aes(fill=supp)) + 
+facet_wrap(~supp)+
+xlab("Dosis")+
+ggtitle("Figura 2. Efecto de la dosis de Vitamina C en el crecimiento de los dientes\n dependiendo del suplemento")+
+theme(axis.text=element_text(size=10),axis.title=element_text(size=10),plot.title = element_text(size=11))
+```
+
+#Pregunta de Investigación
+
+El propósito de este estudio es investigar el efecto de los niveles de Vitamina C (0.5, 1 and 2 mg) en el crecimiento de los dientes usando dos métodos distintos de introducción de la vitamina (Orange Juice o Ascorbic Acid) en Conejillos de india.
+
+La hipótesis del estudio es:
+
+1. Existe alguna diferencia en el crecimiento de los dientes dependiendo del método de aplicación usado para cada una de las dosis de Vitamina C?
+
+
+#Resultado
+## Hipótesis 1
+Existe alguna diferencia en el crecimiento de los dientes dependiendo del método de aplicación usado para cada una de las dosis de Vitamina C?
+
+Pruebas t-tests fueron usadas para comparar los dos métodos de aplicación (Orange Juice y Ascorbic Acid) para las distintas dosis de Vitamina C:
+
+1. $H_o: \mu_{oj} == \mu_{vc}$, $H_a: \mu_{oj} <> \mu_{vc}$, dose level = 0.5
+
+2. $H_o: \mu_{oj} == \mu_{vc}$, $H_a: \mu_{oj} <> \mu_{vc}$, dose level = 1
+
+3. $H_o: \mu_{oj} == \mu_{vc}$, $H_a: \mu_{oj} <> \mu_{vc}$, dose level = 2
+
+
+Especificación de las fórmulas
+
+```{r eval=FALSE, comment=NA}
+1. $H_o: \mu_{oj} == \mu_{vc}$, $H_a: \mu_{oj} <> \mu_{vc}$, dose level = 0.5
+
+2. $H_o: \mu_{oj} == \mu_{vc}$, $H_a: \mu_{oj} <> \mu_{vc}$, dose level = 1
+
+3. $H_o: \mu_{oj} == \mu_{vc}$, $H_a: \mu_{oj} <> \mu_{vc}$, dose level = 2
+```
+
+
+
+Cálculo de la prueba de homogeneidad que se debe ocultar y que su resultado es usado en el documento. Este trozo de código debe estar antes de su referencia en el texto.
+
+```{r BartlettTest, echo=FALSE}
+temp <- bartlett.test(len ~ interaction(supp,dose), data=ToothGrowth)
+
+```
+
+Como se llevan a cabo múltiples pruebas de significancia, se aplicará el factor de corrección de Bonferroni para prevenir posibilidades de cometer un error tipo I. La homogeneidad de las varianzas fue verificado usando el test de Bartlett confirmando que las mismas son iguales (_F=`r round(temp$statistic,2)`, p-valor=`r round(temp$p.value,2)`_). La tabla 4 muestra los resultados de las pruebas t.
+
+
+```{r Test1, echo=FALSE}
+
+aux1 <- t.test(ToothGrowth[which(ToothGrowth$dose==0.5 & ToothGrowth$supp=='OJ'),]$len, 
++        ToothGrowth[which(ToothGrowth$dose==0.5 & ToothGrowth$supp=='VC'),]$len, paired=FALSE,var.equal = TRUE)
+aux2 <- t.test(ToothGrowth[which(ToothGrowth$dose==1 & ToothGrowth$supp=='OJ'),]$len, 
++        ToothGrowth[which(ToothGrowth$dose==1 & ToothGrowth$supp=='VC'),]$len, paired=FALSE,var.equal = TRUE)
+aux3 <- t.test(ToothGrowth[which(ToothGrowth$dose==2 & ToothGrowth$supp=='OJ'),]$len, 
++        ToothGrowth[which(ToothGrowth$dose==2 & ToothGrowth$supp=='VC'),]$len, paired=FALSE,var.equal = TRUE)
+
+p<-p.adjust(c(aux1$p.value,aux2$p.value,aux3$p.value),method="bonferroni")
+
+```
+
+                             Table 4. Resultados pruebas t (OJ vs VC)
+
+| Estadístico | df | Intervalo de Confianza | p-valor |p Ajustado | Dosis mg |
+|---------------:|----|:-------------------:|---------|:-------:|:--------:|
+| `r round(aux1$statistic,2)`| `r round(aux1$parameter,2)`  | `r as.character(round(aux1$conf.int,2))`|`r round(aux1$p.value,3)`       |`r round(p[1],3)`| 0.5 |
+| `r round(aux2$statistic,2)`| `r round(aux2$parameter,2)`  | `r as.character(round(aux2$conf.int,2))`|`r round(aux2$p.value,3)`       |`r round(p[2],3)`|  1  |
+| `r round(aux3$statistic,2)`| `r round(aux3$parameter,2)`  | `r as.character(round(aux3$conf.int,2))`|`r round(aux3$p.value,3)`       | `r round(p[3],3)`| 2  |
+
+El resultado obtenido cuando comparamos el medio de administración de la Vitamina C usando pruebas t en muestras independientes indican que existe una diferencia estadísticamente significativa cuando la dosis de Vitamina C es igual a 0.5 o 1 mg. Los valores ajustados de p para ambos casos son menores que 0.05, por lo tanto rechazamos la hipótesis nula. Además, los intervalos de confianza para dichas dosis no contienen el valor 0. Para el caso de una dosis de 2mg, el valor ajustado de p es mayor que 0.05 y por lo tanto no hay evidencia estadísticamente significativa para rechazar la hipótesis nula. En este caso, el intervalo de confianza contiene el valor 0.
+
+
+***
+
+#Sitios de Interés
+
+1. R Markdown quick Tour (https://rmarkdown.rstudio.com/authoring_quick_tour.html)
+2. R Markdown: The Definitive Guide (https://bookdown.org/yihui/rmarkdown/)
+3. Bookdown: Authoring Books and Technical Documents with R Markdown (https://bookdown.org/yihui/bookdown/)
+4. Chunk options and package options (https://yihui.name/knitr/options/)
+5. RStudio Formats (https://rmarkdown.rstudio.com/formats.html)
+6. LaTeX Journal Article Templates for R Markdown (https://github.com/rstudio/rticles)
+7. YAML Options (https://bookdown.org/yihui/bookdown/yaml-options.html)
+
+
+

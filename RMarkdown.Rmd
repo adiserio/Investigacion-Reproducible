@@ -1,0 +1,901 @@
+---
+title:  "Investigación Reproducible con R Markdown"
+author: "Angela Di Serio"
+date:   "Abril, 2019"
+output:
+  ioslides_presentation:
+    widescreen: yes
+  slidy_presentation: default
+  beamer_presentation: default
+  revealjs::revealjs_presentation: 
+    theme: default
+    reveal_plugins: [zoom, chalkboard, menu]
+    highlight: haddock
+    center: true
+    transition: slide
+    css: reveal.css
+    self_contained: false
+    keep_md: true
+    print_pdf: true
+---
+<style>
+  .col1 {
+    columns: 1 400px;         /* number of columns and width in pixels*/
+    -webkit-columns: 1 400px; /* chrome, safari */
+    -moz-columns: 1 400px;    /* firefox */
+  
+  }
+  .col2 {
+    columns: 2 400px;         /* number of columns and width in pixels*/
+    -webkit-columns: 2 400px; /* chrome, safari */
+    -moz-columns: 2 400px;    /* firefox */
+  }
+  .col3 {
+    columns: 3 100px;
+    -webkit-columns: 3 100px;
+    -moz-columns: 3 100px;
+  }
+
+
+</style>
+
+
+
+
+``` {r results='hide',echo=FALSE, warnings=FALSE, message=FALSE, quietly=TRUE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+
+``` {r Librerias, warning=FALSE, message=FALSE, echo=FALSE}
+list.of.packages <- c("png","grid")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()
+                                   [,"Package"])]
+if(length(new.packages)) install.packages(new.packages,repos="https://cloud.r-project.org")
+
+library(png)
+library(grid)
+
+```
+
+
+
+# Motivación
+
+## Motivación
+
+Una variedad de estudios recientes, principalmente en el campo biomédico, han revelado
+que un número grande de resultados de investigación encontrados en la literatura fallan 
+en reproducibilidad, debido a métodos experimentales descuidados, análisis estadísticos
+defectuosos o, en algunos casos, fraude
+
+
+## Motivación
+
+A medida que vamos trabajando con datos,  nos vamos dando cuenta  de lo poco 
+convincentes que son algunos de los artículos que hemos leído o revisado y que muy 
+probablemente se han cometido errores en términos de metodología experimental y que
+dichos trabajos no son  fácilmente reproducibles
+
+
+## Qué deseamos?
+
+Posibilidad de evaluar críticamente la exactitud de las afirmaciones científicas y conclusiones extraídas por otros científicos
+
+Posibilidad de reproducir nuestros trabajos en el tiempo
+
+Para ello, se requiere de una descripción precisa del procedimiento experimental y del posterior análisis de los datos, así como una cuidadosa atención a las posibles fuentes de error
+
+# Definición
+
+
+## Reproducibilidad
+
+Capacidad de un investigador para duplicar los resultados de un estudio anterior utilizando los mismos materiales que utilizó el investigador original
+
+## Replicabilidad
+
+Capacidad de un investigador para duplicar los resultados de un estudio anterior si se siguen los mismos procedimientos pero se recopilan datos nuevos
+
+## Cómo reproducimos esta figura pues no se incluyeron las unidades? ![](Imagenes/Boxplot.png){width=1000px}
+
+## Necesitamos
+
+- El Conjunto de Datos
+
+- El diccionario del conjunto de datos para entender cada uno de los atributos
+
+- El código para generar el gráfico
+
+- La versión del software / paquetes utilizados
+
+- etc...
+
+# Qué podemos hacer?
+
+## Literate Programming
+Término introducido por Donald Knuth a principios de los años 80
+
+Un programa  tradicional consiste en un archivo de texto que contiene el código del programa y dispersos entre el código  hay comentarios que describen las distintas partes del mismo
+
+En LITERATE PROGRAMMING  se invierte el énfasis
+
+## Literate Programming
+Permite  escribir  documentación que contiene código
+
+El programa  se convierte principalmente en un documento dirigido a los seres humanos
+  
+  
+  
+$$ Literate \: Programming = (Texto) + (Código)$$
+
+## Literate Programming
+
+D. Knuth introduce WEB que enlaza TeX con Pascal
+
+Posteriormente aparecen otras alternativas  
+
+<div class="col3">
+CWEB  
+Literate  
+Codnar  
+Axiom  
+Funnel WEB  
+Jupyter Notebooks  
+NoWeb  
+Molly  
+R Notebooks  
+
+</div>
+
+## Dynamic Documentation
+
+En 2002 aparece SWEAVE (Friedrich Leisch)  
+
+Código R en documentos LaTeX
+
+Cada vez que hay cambios en los datos o en el análisis se actualiza el documento
+
+En 2012 aparece Knitr (Yihui Xie) que combina R con LaTeX y Markdown
+
+
+# R Markdown
+
+## Markup
+
+EL lenguaje de Markup es un sistema para hacer anotaciones en documentos de texto. Por ejemplo HTML utiliza _tags_ como:
+```
+<h1>Heading</h1>
+<h2>Sub-heading</h2>
+<a href="www.webpage.com">Link</a>
+<i>italic</i> <b>bold</b>
+<ul>
+  <li>List-item1</li>
+  <li>List-item2</li>
+  <li>List-item3</li>
+</ul>
+```
+
+## Markdown
+
+Es un lenguaje de marcado que utiliza una sintaxis muy simple para ser lo más discreto posible de forma que no interfiera con la lectura del texto plano.
+
+```
+# Heading 
+
+## Sub-heading
+
+### Sub-sub-heading
+
+[link](http://www.webpage.com).
+
+_italic_, *italic*, **bold**, `monospace`
+
+  * List-item1
+  * List-item2
+  * List-item3
+  
+  
+```
+
+
+## R Markdown
+
+Herramienta disponible en el ambiente de R que nos permite construir y compartir el flujo de trabajo utilizado para llegar a los resultados y conclusiones de nuestro estudio
+
+Se basa en el lenguaje de marcado ligero  Markdown diseñado para ser legible por el humano y flexible en su salida
+
+
+$$ R \: Markdown = (Markdown) + (Código\:en\:R)$$
+
+##
+![](./Imagenes/RMD.png){width=1000px}
+
+## R Markdown
+
+Necesitamos R y es deseable contar con el ambiente integrado de desarrollo de RStudio
+
+
+##  
+![](Imagenes/rlogo.png){width=50px}
+es un entorno y lenguaje de programación para el análisis estadístico de datos 
+
+<span style="color:blue">**Características**</span>
+
+
+- distribuido bajo licencia GNU, es decir lo puedes utilizar y mejorar
+
+- multiplataforma
+
+- posee alta capacidad gráfica
+
+- es compatible con una gran cantidad de formatos
+
+- es ampliable
+
+
+## Instalación de R
+
+<http://cran.es.r-project.org/>
+
+![](Imagenes/r1.png)
+
+
+
+## Ambiente R
+
+
+``` {r fig.width=10, fig.height=6, echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("Imagenes/Ambiente R.png")
+grid.raster(img)
+
+```
+
+##
+
+![](Imagenes/rstudioLogo.png) 
+
+es un entorno de desarrollo integrado (IDE) para R
+
+Incluye una consola, editor de sintaxis que apoya la ejecución de código, así como herramientas para la depuración y la gestión del espacio de trabajo 
+
+
+## Instalación de RStudio
+<http://www.rstudio.com/>
+
+![](Imagenes/r2.png)
+
+## RStudio facilita
+
+- Trabajar con R y gráficos de R de forma interactiva
+
+- Organizar el código y mantener múltiples proyectos
+
+- Mantenimiento de los paquetes de R
+
+- Crear y compartir informes
+
+- Compartir código y colaborar con otros usuarios
+
+- NO realiza ninguna operación estadística. Solo facilita realizar dichas operaciones sobre R.
+
+
+## Características de RStudio
+- **Integración de la consola de R**  
+Ejecución de comandos de R directamente en la consola de RStudio
+- **Ejecución de cdigo** directamente a partir de un script
+- **Resaltado de la sintaxis**  
+Coloración automática de los instrucciones y de las funciones
+- **Ayuda con los paréntesis, corchetes y comillas**  
+Autocompletación de estos símbolos al abrirlos
+- **Completa los comandos mientras se escriben usando la tecla Tab**  
+
+
+## Características de RStudio
+- Se pueden inspeccionar todos los objetos de la sesión R
+- Gestión del historial de comandos
+- Importación y visualización de datos en formato de tabla
+- Integración de gráficos: manipulación, zoom y exportación
+- Gestión de proyectos: se puede cambiar de un proyecto a otro fácilmente
+- Control de versión: se integra bien con git y svn
+- Generación de documentos: del tipo PDF, HTML y otros más avanzados con un solo click
+
+
+
+##
+``` {r fig.width=10, fig.height=5, echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("Imagenes/RStudio IDE1.png")
+grid.raster(img)
+
+```
+
+
+## Un poco de R
+
+## Espacio y directorio de trabajo
+El **workspace** es el espacio de trabajo en donde se incluyen todos los objetos
+definidos por el usuario
+
+Se almacena en memoria intermedia mientras trabajas con R
+
+Cuando termina una sesión de R o RStudio  te pregunta si quieres guardar el
+**workspace** para usos futuros
+
+Este espacio se recarga al volver a iniciar la sesión
+
+Directorio de trabajo  es el directorio donde por defecto lee R
+
+También es donde guardará el workspace al finalizar la sesión
+y donde buscará un workspace guardado al inicio
+
+## Funciones para el manejo del workspace
+
+|Función                 | Acción                                                         |
+|:-----------------------|:---------------------------------------------------------------|
+| getwd()                | Muestra el directorio de trabajo                               |
+|setwd(midirectorio)     | Ajusta el directorio de trabajo al especificado                |
+|ls() o dir()            | Lista lo que hay en el directorio de trabajo                   |
+|history()               | Muestra los últimos comandos ejecutados                        |
+|savehistory()           | Guarda el historial de comandos por defecto en .RHistory       |
+|loadhistory()           | Carga el historial de comandos                                 |
+|save.image("mywspace.R")| Guarda los objetos del workspace, por defecto en .RData        |
+|load("mywspace.R")      | Carga el workspace mywspace.R                                  |
+
+## Lenguaje R
+Todo lo que es precedido por  **#**, R lo considera un comentario y no lo **interpreta**
+
+El operador <- o el = se utiliza para hacer asignaciones
+
+Las variables no se declaran, se crean al asignarles un valor 
+
+
+``` {r}
+variable <- 10
+copia = 25
+```
+
+``` {r}
+variable
+copia
+```
+
+##
+
+``` {r}
+set.seed(1)
+x <- rnorm(50)
+x
+
+```
+
+##
+``` {r}
+summary(x)
+mean(x)
+median(x)
+class(x)
+```
+
+##
+``` {r}
+par(mfrow=c(1,2))
+hist(x)
+boxplot(x)
+```
+
+## R como calculadora
+``` {r}
+4+2*10
+5^2
+10/3
+
+```
+##
+Muchas funciones matemáticas están disponibles: sqrt, exp, log, sin, cos, tan, etc
+
+``` {r}
+sqrt(2)
+log(32); log2(32)
+sin(45)
+```
+
+## Vectores 
+En general, necesitaremos trabajar con colecciones de números o vectores
+
+Pueden ser creados de distinas maneras:
+
+- Comando concatenar (c)
+
+``` {r}
+peso <- c(50.5,48.2,70.5,25.5,66,69.12,89.5)
+edad <- c(21,23,40,13,50,60,43)
+peso
+edad
+length(peso)
+```
+
+## Vectores
+- Comando secuencia (seq) 
+
+Genera secuencias regulares de números seq(mínimo, máximo, incremento)
+
+``` {r}
+seq(1,10,1)
+seq(2000, 2020, 2)
+seq(0,1,0.1)
+```
+
+## Vectores
+- Comando replicar (rep) 
+
+Genera secuencias regulares de un cierto patrón
+
+``` {r}
+rep(1,10)
+rep(1:5,2)
+rep(c("Si","No"),4)
+```
+
+
+## Vectores
+Todas las operaciones aritméticas y funciones pueden ser aplicadas a vectores
+
+```{r}
+a <- 1:10
+a
+b <- rep(c(1,2),5)
+b
+a+b
+sqrt(a)
+a^2
+
+```
+
+## Vectores
+Además de las funciones matemáticas, existen muchas otras funciones aplicables a vectores
+
+|Función | Acción |
+|:------|:------|
+| length(v)|Longitud del vector|
+|min(v)| Mínimo valor del vector|
+|max(v)| Máximo valor del vector|
+|sum(v)| Suma de los elementos del vector|
+|mean(v)| Promedio de los elementos del vector|
+|var(v)| Varianza muestral|
+|sort(v)| Ordena los elementos del vector en forma creciente|
+
+## Vector
+Para extraer un elemento en particular del vector se especifica el índice entre []
+
+También se pueden especificar rangos o un conjunto de índices
+
+```{r}
+peso
+peso[2]
+peso[2:3]
+peso[c(1,3,5,7)]
+```
+
+## Valores Lógicos
+
+Existen dos valores lógicos:
+
+  - verdadero (TRUE)
+
+  - falso (FALSE)
+
+Los siguientes operadores producen valores lógicos
+
+|  |   |
+|:------|:------|
+| > | Mayor que |
+| < | Menor que |
+|<= | Menor o igual que |
+|>= | Mayor o igual que |
+|== | Igual a |
+|!= | Distinto a |
+
+## 
+
+``` {r}
+peso;edad
+peso > 55
+sum(peso>55); sum(peso[peso>55])
+peso[edad>21]
+```
+
+## Matrices
+Una matrix contiene una serie de elementos del mismo tipo organizados por filas y columnas
+
+``` {r}
+miMatriz <- matrix(1:10,nrow=2,ncol=5)
+miMatriz
+class(miMatriz)
+dim(miMatriz)
+```
+
+## Matrices
+
+Otra forma para crear matrices
+
+```{r}
+y<- (1:10)
+y
+dim(y) <- c(2,5)
+y
+```
+
+## Matrices
+
+También se pueden crear juntando filas (rbind) o columnas (cbind)
+
+
+```{r}
+a <- seq(1,10,2)
+b <- seq(2,10,2)
+a; b
+z <- rbind(a,b) 
+z
+dim(z)
+```
+
+## Operaciones con Matrices
+
+Podemos sumar, restar, multiplicar y dividir dos matrices pero la operación se lleva a cabo elemento por elemento
+
+Para multiplicar matrices utilizamos el operador %*%
+
+``` {r}
+z*y
+z %*% t(y)
+```
+
+## Data frames
+
+Generalmente necesitamos trabajar con datos de distintos tipos (caracteres, números, valores lógicos, etc.)
+
+Los **data frames** nos permiten esto
+
+``` {r}
+data(mtcars)   # Carga un data set de R 
+head(mtcars)
+class(mtcars)
+
+```
+
+## Acceso a la información en Data Frames
+
+``` {r}
+mtcars[,1]   # Accede el atributo mpg de mtcars
+mtcars[1,1]  # 
+mtcars$mpg
+mtcars$qsec
+```
+
+##
+``` {r}
+apply(mtcars[,1:4],2,max)  # Aplica la funcion max sobre las columnas 1 a 4
+apply(mtcars[,1:4],2,mean) # Aplica la funcion mean sobre las columnas 1 a 4
+```
+
+
+# Estructura de un documento en RMarkadown
+
+##
+
+* Cabecera 
+
+  > `YAML Ain't Markup Language o Yet Another Markup Language`  
+  > Utiliza la sintaxis de YAML para especificar información sobre el documento a generar 
+  
+* Cuerpo del Documento en RMarkdown
+
+# Cabecera 
+
+##
+
+Aparece al inicio del documento entre dos líneas  `---` 
+  
+Permite establecer las características del documento a generar
+
+
+
+##
+
+<pre class="highlight">
+---
+title: "Mi primer Documento Dinámico" 
+author: "Angela Di Serio"
+date: "Abril, 2019"
+output: 
+&nbsp html_document: &nbsp &nbsp &nbsp &nbsp &nbsp  # HTML
+&nbsp &nbsp toc: true &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp # incluir Tabla de contenidos 
+&nbsp &nbsp toc_float: true &nbsp &nbsp &nbsp &nbsp # toc flotante a la izquierda del doc
+&nbsp &nbsp collapsed: false 
+&nbsp &nbsp smooth_scroll: false
+&nbsp &nbsp number_sections: true     
+---
+</pre> 
+
+
+
+## Ejemplo para generar un documento en HTML - Word o PDF
+
+<pre class="highlight">
+---
+title: "Demostración"
+author: "Angela Di Serio"
+date: "April 26, 2019"
+output:
+&nbsp word_document:
+&nbsp &nbsp toc: yes
+&nbsp &nbsp toc_depth: '3'
+&nbsp pdf_document:
+&nbsp &nbsp number_sections: yes
+&nbsp &nbsp toc: yes
+&nbsp &nbsp toc_depth: 3
+&nbsp html_document:
+&nbsp &nbsp collapsed: no
+&nbsp &nbsp number_sections: yes
+&nbsp &nbsp smooth_scroll: no
+&nbsp &nbsp toc: yes
+&nbsp &nbsp toc_float: yes
+---
+</pre>
+
+## Ejemplo
+
+Para mejorar la apariencia de las tablas usamos df_print (kable, tibble, default)
+
+<pre class="highlight">
+---
+title: "Demostración"
+author: "Angela Di Serio"
+date: "April 26, 2019"
+output:
+&nbsp pdf_document:
+&nbsp &nbsp number_sections: yes
+&nbsp &nbsp toc: yes
+&nbsp &nbsp toc_depth: 3
+&nbsp &nbsp df_print: kable
+---
+</pre>
+
+
+##
+``` {r fig.width=10, fig.height=5, echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("Imagenes/RStudio Formats.png")
+grid.raster(img)
+
+```
+
+
+
+# Cuerpo del Documento - R Markdown
+
+## Cuerpo del Documento
+
+* El cuerpo del documento está a continuación de los metadatos
+  
+* La prosa o narración es Markdown  
+  
+* Hay dos tipos de código que pueden ser incluido dentro de la narración:
+
+    + Fragmento de código que comienza con tres _backticks_ como ` ```{r} ` donde _r_ indica el nombre del lenguaje de programación. El fragmento o bloque termina con tres _backticks_. Entre las llaves se pueden especificar las opciones del fragmento como por ejemplo, establecer la altura de la figura en 5 pulgadas: ` ```{r, fig.height = 5} `
+
+    + Una expresión de código R en línea que comienza con un _backtick_ `r` y termina con un _backticks_ `` `
+
+##
+
+![](./Imagenes/FragmentoR1.png){width=1000px}
+
+##
+![](./Imagenes/FragmentoR2.png){width=1000px}
+
+## Texto 
+
++ Simplemente lo que escribimos formará parte de la narrativa de nuestro documento final  
+
++ Para iniciar un nuevo parráfo debemos agregar dos espacios al final de la línea    
+
++ Itálica se indica colocando la frase entre un asterisco  ` *itálica* `  *itálica*  
+
++ Negrilla colocamos la frase entre dos asteriscos ` **negrilla** `  **negrilla**
+
+## Texto
+
++ Frase de forma literal se coloca entre _backtick_ `texto literal`  
+
++ Subíndices usamos el caracter ^  `C^2^` C^2^  
+
++ Superíndices usamos el caracter ~ `C~2~`  C~2~  
+
+## Ecuaciones
+
+
+
+   > +  En bloque se especifica entre dos signos de \$  ` $$\int_{a}^{b} x^2 dx$$ ` $$\int_{a}^{b} x^2 dx$$  
+    
+   > +  Entre líneas de texto se especifica entre un signo \$ `$\int_{a}^{b} x^2 dx$` $\int_{a}^{b} x^2 dx$  
+  
+
+## Texto
+
+Para especificar las secciones de un documento se utiliza el símbolo `#` para el primer nivel, `##  
+` para el segundo nivel, `###` para el tercer nivel y asi sucesivamente  
+
+
+Si alguna sección no debe ser enumerada se agrega `{-}` o `{.unnumbered}` después del título de la sección  
+
+`# Prefacio {-}`
+
+## Texto
+
+Para citas se utiliza el símbolo `>`
+<code>
+>"I thoroughly disapprove of duels. If a man should challenge me,  
+  I would take him kindly and forgivingly by the hand and lead him  
+  to a quiet place and kill him."  
+>  
+> --- Mark Twain
+</code>
+
+>"I thoroughly disapprove of duels. If a man should challenge me, I would take him kindly and forgivingly by the hand and lead him to a quiet place and kill him."
+>
+> --- Mark Twain
+
+
+##
+
+``` {r  fig.width=10, fig.height=5,echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("./Imagenes/Markdown1.png")
+grid.raster(img)
+
+```
+
+##
+
+``` {r  fig.width=8, fig.height=4,echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("./Imagenes/Markdown2.png")
+grid.raster(img)
+
+```
+
+##
+
+``` {r  fig.width=8, fig.height=4,echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("./Imagenes/Markdown3.png")
+grid.raster(img)
+
+```
+
+##
+
+``` {r  fig.width=12, fig.height=6,echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("./Imagenes/Markdown4.png")
+grid.raster(img)
+
+```
+
+##
+
+* Item1
+* Item2
+    + sub item 2.1
+    + sub item 2.2
+* Item3
+    + sub item 3.1
+        - sub item 3.1.1
+
+##
+
+``` {r  fig.width=8, fig.height=4,echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("./Imagenes/Markdown5.png")
+grid.raster(img)
+
+```
+
+
+##
+(@) Una lista que continuará después de un párrafo
+
+aqui va un texto cualquiera  
+puedo tener varias líneas de texto  
+y la enumeración continuará cuando lo indique  
+
+
+(@) por estos lados continúa la lista enumerada
+
+##
+
+``` {r  fig.width=8, fig.height=4,echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("./Imagenes/Markdown6.png")
+grid.raster(img)
+
+```
+
+##
+
+``` {r  fig.width=8, fig.height=4,echo=FALSE, warnings=FALSE, message=FALSE}
+img <- readPNG("./Imagenes/Markdown7.png")
+grid.raster(img)
+
+```
+
+# Creación de un fichero RMD
+
+## ![](./imagenes/RMD1.png){width=1000px}
+
+## ![](./imagenes/RMD2.png){width=1000px}
+
+## ![](./imagenes/RMD3.png){width=1000px}
+
+## ![](./imagenes/RMD4.png){width=1000px}
+
+
+# Formatos de Artículos para R Markdown
+
+## Librería _rticles_
+
+Contiene un conjunto de formatos de R Markdown y plantillas para la creación de artículos de revistas y presentaciones de conferencias
+
+install.packages("rticles")  para su instalación desde RStudio
+
+También existe la posibilidad de instalar la versión en desarrollo que puede contener formatos nuevos  
+
+
+remotes::install_github("rstudio/rticles")
+
+##
+<div class="col2"><font size="5">
+ACM articles
+
+ACS articles
+
+AEA journal submissions
+
+AGU journal submissions
+
+AMS articles
+
+Biometrics articles
+
+Bulletin de l'AMQ journal submissions
+
+CTeX documents
+
+Elsevier journal submissions
+
+IEEE Transaction journal submissions
+
+JSS articles
+
+MDPI journal submissions
+
+Monthly Notices of the Royal Astronomical Society articles
+
+NNRAS journal submissions
+
+PeerJ articles
+
+Royal Society Open Science journal submissions
+
+Sage journal submissions
+
+Springer journal submissions
+
+Statistics in Medicine journal submissions
+
+Copernicus Publications journal submissions
+
+The R Journal articles
+
+</font></div>
+
+## ![](imagenes/rticle.png)
+
+
+  
+  
+
